@@ -11,7 +11,6 @@ module Blobfish
       STATUS_NEW = 10
       TOKEN_TYPE_P12 = 'P12'
       TOKEN_TYPE_USERGENERATED = 'USERGENERATED'
-      RESPONSETYPE_CERTIFICATE = 'CERTIFICATE'
       REVOCATION_REASON_UNSPECIFIED = 0
 
       # @param [String] ws_additional_trusted_anchors e.g. +ca-certificates.crt+. Required only if +wsdl_url+ uses a non-commercial SSL certificate, otherwise it should be +nil+.
@@ -69,9 +68,20 @@ module Blobfish
                           arg0: end_user,
                           arg1: pem_csr,
                           arg2: 0,
-                          arg4: RESPONSETYPE_CERTIFICATE)
+                          arg4: "CERTIFICATE")
         cert_as_der = Client.double_decode64(ws_resp[:data])
         Certificate.new(cert_as_der)
+      end
+
+      def request_pkcs7_from_csr(pem_csr, ejbca_username, email_address, subject_dn, subject_alt_name, validity_type, validity_value)
+        end_user = create_end_user(ejbca_username, nil, TOKEN_TYPE_USERGENERATED, email_address, subject_dn, subject_alt_name, validity_type, validity_value)
+        ws_resp = ws_call(:certificate_request,
+                          arg0: end_user,
+                          arg1: pem_csr,
+                          arg2: 0,
+                          arg4: "PKCS7WITHCHAIN")
+        pkcs7_as_der = Client.double_decode64(ws_resp[:data])
+        OpenSSL::PKCS7.new(pkcs7_as_der)
       end
 
       def revoke_cert(serial_number)
