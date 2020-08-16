@@ -17,7 +17,6 @@ module Blobfish
       # @param [Integer] cert_validity_offset the certificate validity offset that EJBCA will apply to the current certificate profile. It is set by default to -600 seconds. See 'certificate.validityoffset' in EJBCA's 'cesecore.properties'.
       def initialize(wsdl_url, ws_additional_trusted_anchors, ws_client_certificate, ws_client_key, ws_client_key_password, ca_name, cert_profile, ee_profile, cert_validity_offset = -600)
         @client = Savon.client(
-            ssl_verify_mode: :none,
             wsdl: wsdl_url,
             ssl_cert_file: ws_client_certificate,
             ssl_cert_key_file: ws_client_key,
